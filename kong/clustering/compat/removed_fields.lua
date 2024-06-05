@@ -157,5 +157,23 @@ return {
     hmac_auth = {
       "realm",
     },
+    ai_proxy = {
+      "max_request_body_size",
+    },
+    ai_prompt_decorator = {
+      "max_request_body_size",
+    },
+    ai_prompt_guard = {
+      "max_request_body_size",
+    },
+    ai_prompt_template = {
+      "max_request_body_size",
+    },
+    ai_request_transformer = {
+      "max_request_body_size",
+    },
+    ai_response_transformer = {
+      "max_request_body_size",
+    },
   },
 }
