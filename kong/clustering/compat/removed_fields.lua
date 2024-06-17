@@ -157,5 +157,8 @@ return {
     hmac_auth = {
       "realm",
     },
+    acl = {
+      "always_use_authenticated_groups",
+    },
   },
 }
