@@ -7,16 +7,14 @@ name: Add New Release to Pongo
 
 on:
   # 'releasea event will trigger a 'push' event at the same time
-  # so we only use the 'push' event in production, and the 'release'
-  # event is only used for test purpose.
+  # so we use the 'push' event in production, and the 'release'
+  # for test purpose.
   release:
     types: [prereleased]
-  push:
-    tags:
-    # CE
-    - '[1-9]+.[0-9]+.[0-9]+'
-    # EE
-    - '[1-9]+.[0-9]+.[0-9]+.[0-9]+'
+  # push:
+  #   tags:
+  #   - '[1-9]+.[0-9]+.[0-9]+'         # CE
+  #   - '[1-9]+.[0-9]+.[0-9]+.[0-9]+'  # EE
 
 jobs:
   set_vars:
