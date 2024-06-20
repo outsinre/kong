@@ -20,7 +20,7 @@ jobs:
     name: Set Vars
     runs-on: ubuntu-latest
     outputs:
-      code_base: ${{ steps.define_vars.outputs.CODE_BASE }}
+      ce_ee: ${{ steps.define_vars.outputs.CE_EE }}
       tag_version: ${{ steps.define_vars.outputs.TAG_VERSION }}
       pr_branch: ${{ steps.define_vars.outputs.PR_BRANCH }}
     steps:
@@ -30,14 +30,14 @@ jobs:
       run: |
         # change outsinre to kong
         if [[ "${GITHUB_REPOSITORY}" = "outsinre/kong" ]] ; then
-          CODE_BASE=CE
+          CE_EE=CE
         elif [[ "${GITHUB_REPOSITORY}" = "outsinre/kong-ee" ]] ; then
-          CODE_BASE=EE
+          CE_EE=EE
         fi
-        echo "CODE_BASE=$CODE_BASE" >> "$GITHUB_OUTPUT"
+        echo "CE_EE=$CE_EE" >> "$GITHUB_OUTPUT"
 
         echo "GITHUB_REPOSITORY = $GITHUB_REPOSITORY"
-        echo "CODE_BASE = $CODE_BASE"
+        echo "CE_EE = $CE_EE"
         echo "github.event.name = ${{ github.event_name }}"
         echo "github.ref = ${{ github.ref }}"
         echo "github.ref_name = ${{ github.ref_name }}"
@@ -52,7 +52,7 @@ jobs:
 
         echo "TAG_VERSION = $TAG_VERSION"
 
-        echo "PR_BRANCH=add-${CODE_BASE,,}-version-${TAG_VERSION}" >> "$GITHUB_OUTPUT"
+        echo "PR_BRANCH=add-${CE_EE,,}-version-${TAG_VERSION}" >> "$GITHUB_OUTPUT"
   add_release_to_pongo:
     name: Add Release to Pongo
     runs-on: ubuntu-latest
@@ -82,8 +82,8 @@ jobs:
         git checkout -b "${{ needs.set_vars.outputs.pr_branch }}"
         git status
 
-        code_base="${{ needs.set_vars.outputs.code_base }}"
-        VERSIONS_FILE="assets/kong_${code_base}_versions.ver"
+        ce_ee="${{ needs.set_vars.outputs.ce_ee }}"
+        VERSIONS_FILE="assets/kong_${ce_ee}_versions.ver"
         if [[ ! -f $VERSIONS_FILE ]]; then
           echo "Versions file '$VERSIONS_FILE' not found"
           exit 1
@@ -93,9 +93,9 @@ jobs:
         sort --version-sort -o "$VERSIONS_FILE" "$VERSIONS_FILE"
         git diff
         git add "$VERSIONS_FILE"
-        git commit -m "feat(version): add Kong ${code_base} version $tag_version"
+        git commit -m "feat(version): add Kong ${ce_ee} version $tag_version"
         git status
-    - name: Checkout Kong "${{ needs.set_vars.outputs.code_base }}"
+    - name: Checkout Kong "${{ needs.set_vars.outputs.ce_ee }}"
       id: checkout_kong
       uses: actions/checkout@v4
       with:
@@ -148,7 +148,7 @@ jobs:
         git status
 
         git add kong-versions/
-        git commit -m "chore(version): add Kong "${{ needs.set_vars.outputs.code_base }}" version $tag_version artifacts"
+        git commit -m "chore(version): add Kong "${{ needs.set_vars.outputs.ce_ee }}" version $tag_version artifacts"
 
         git status
 
@@ -157,4 +157,4 @@ jobs:
       id: create_pr
       shell: bash
       run: |
-        gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong "${{ needs.set_vars.outputs.code_base }}" version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA Bot.'
+        gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong "${{ needs.set_vars.outputs.ce_ee }}" version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA Bot.'
