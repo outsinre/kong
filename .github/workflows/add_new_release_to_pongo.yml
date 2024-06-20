@@ -42,7 +42,7 @@ jobs:
         echo "github.event.release.tag_name = ${{ github.event.release.tag_name }}"
 
         if [[ "${{ github.event_name }}" == "push" ]] ; then
-          TAG_VERSION="${{ github.ref_name }}""
+          TAG_VERSION="${{ github.ref_name }}"
         elif [[ "${{ github.event_name }}" == "release" ]] ; then
           TAG_VERSION="${{ github.event.release.tag_name }}"
         fi
