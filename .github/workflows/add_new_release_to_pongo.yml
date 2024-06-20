@@ -71,8 +71,8 @@ jobs:
       run: |
         ls "$PWD" ; git status
 
-        git config --global user.email "ci-bot@konghq.com"
-        git config --global user.name "CI Bot"
+        git config --global user.email "gha-bot@konghq.com"
+        git config --global user.name "GHA Bot"
         git config --global --list
 
         git checkout -b "${{ needs.set_vars.outputs.pr_branch }}"
@@ -152,4 +152,4 @@ jobs:
       id: create_pr
       shell: bash
       run: |
-        gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
+        gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA Bot.'
