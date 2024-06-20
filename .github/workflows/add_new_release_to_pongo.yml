@@ -1,5 +1,7 @@
 # 1. runs-on
 # 2. CE EE
+# 3. Check comments
+# 4. remove unnecessary echo, git status, etc.
 
 name: Add New Release to Pongo
 
