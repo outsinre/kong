@@ -147,7 +147,7 @@ jobs:
 
         git status
 
-        git push -u fork ${{ needs.set_vars.outputs.pr_branch }}
+        git push -u origin ${{ needs.set_vars.outputs.pr_branch }}
     - name: Create PR
       id: create_pr
       shell: bash
