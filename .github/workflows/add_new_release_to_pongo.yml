@@ -95,7 +95,7 @@ jobs:
         git add "$VERSIONS_FILE"
         git commit -m "feat(version): add Kong ${ce_ee} version $tag_version"
         git status
-    - name: Checkout Kong "${{ needs.set_vars.outputs.ce_ee }}"
+    - name: Checkout Kong ${{ needs.set_vars.outputs.ce_ee }}
       id: checkout_kong
       uses: actions/checkout@v4
       with:
