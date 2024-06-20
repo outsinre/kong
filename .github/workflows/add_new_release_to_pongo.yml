@@ -24,6 +24,7 @@ jobs:
     outputs:
       repo_name: ${{ steps.set_repo_tag.outputs.REPO_NAME }}
       tag_version: ${{ steps.set_repo_tag.outputs.TAG_NAME }}
+      pr_branch: ${{ steps.set_repo_tag.outputs.PR_BRANCH }}
     steps:
     - name: Set Repo and Tag
       id: set_repo_tag
@@ -45,6 +46,8 @@ jobs:
         elif [[ "${{ github.event_name }}" == "release" ]] ; then
           echo "TAG_NAME=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
         fi
+
+        echo "PR_BRANCH=add-${CODE_BASE,,}-version-${tag_version}" >> "$GITHUB_OUTPUT"
   add_release_to_pongo:
     name: Add Release to Pongo
     runs-on: ubuntu-latest
@@ -71,8 +74,7 @@ jobs:
         git config --global user.name "CI Bot"
         git config --global --list
 
-        tag_version="${{ needs.set_vars.outputs.tag_version }}"
-        git checkout -b "add-${CODE_BASE,,}-version-${tag_version}"
+        git checkout -b "${{ needs.set_vars.outputs.pr_branch }}"
         git status
 
         VERSIONS_FILE="assets/kong_${CODE_BASE}_versions.ver"
@@ -80,6 +82,7 @@ jobs:
           echo "Versions file '$VERSIONS_FILE' not found"
           exit 1
         fi
+        tag_version="${{ needs.set_vars.outputs.tag_version }}"
         echo "${tag_version}" >> "$VERSIONS_FILE"
         sort --version-sort -o "$VERSIONS_FILE" "$VERSIONS_FILE"
         git diff
@@ -139,10 +142,16 @@ jobs:
         git status
 
         git add kong-versions/
-        git commit -m "chore(version) add Kong ${CODE_BASE} version $tag_version artifacts"
+        git commit -m "chore(version): add Kong ${CODE_BASE} version $tag_version artifacts"
 
-        git push -u origin head
         git status
 
-        type gh
-        type hub
+        git add remote fork "git@github.com:outsinre/kong-pongo.git"
+        git remote -v
+        git push -u fork head
+    - name: Create PR
+      id: create_pr
+      shell: bash
+      run: |
+        # gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
+        gh pr create -R Kong/kong-pongo -B master -H "outsinre:${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
