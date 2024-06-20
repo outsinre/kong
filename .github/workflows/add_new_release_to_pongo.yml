@@ -1,0 +1,144 @@
+# 1. runs-on
+# 2. CE EE
+
+name: Add New Release to Pongo
+
+on:
+  # release:
+  #   types: [published]
+  push:
+    tags:
+    # CE
+    - '[1-9]+.[0-9]+.[0-9]+'
+    # EE
+    - '[1-9]+.[0-9]+.[0-9]+.[0-9]+'
+
+env:
+  # please update accordingly
+  CODE_BASE: CE
+
+jobs:
+  set_vars:
+    name: Set Vars
+    runs-on: ubuntu-latest
+    outputs:
+      repo_name: ${{ steps.set_repo_tag.outputs.REPO_NAME }}
+      tag_version: ${{ steps.set_repo_tag.outputs.TAG_NAME }}
+    steps:
+    - name: Set Repo and Tag
+      id: set_repo_tag
+      shell: bash
+      run: |
+        if [[ "$CODE_BASE" == "CE" ]] ; then
+          echo "REPO_NAME=kong" >> "$GITHUB_OUTPUT"
+        elif [[ "$CODE_BASE" == "EE" ]] ; then
+          echo "REPO_NAME=kong-ee" >> "$GITHUB_OUTPUT"
+        fi
+
+        echo "github.event.name = ${{ github.event_name }}"
+        echo "github.ref = ${{ github.ref }}"
+        echo "github.ref_name = ${{ github.ref_name }}"
+        echo "github.event.release.tag_name = ${{ github.event.release.tag_name }}"
+
+        if [[ "${{ github.event_name }}" == "push" ]] ; then
+          echo "TAG_NAME=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+        elif [[ "${{ github.event_name }}" == "release" ]] ; then
+          echo "TAG_NAME=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+        fi
+  add_release_to_pongo:
+    name: Add Release to Pongo
+    runs-on: ubuntu-latest
+    needs:
+    - set_vars
+    env:
+      # Required clone 'kong/kong' or 'kong/kong-ee' or push PR to 'kong/kong-pongo'
+      # GITHUB_TOKEN: ${{ secrets.PAT }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Pongo
+      id: checkout_pongo
+      uses: actions/checkout@v4
+      with:
+        repository: kong/kong-pongo
+        ref: master
+    - name: Update Versions File
+      id: update_versions_file
+      shell: bash
+      run: |
+        ls "$PWD" ; git status
+
+        git config --global user.email "ci-bot@konghq.com"
+        git config --global user.name "CI Bot"
+        git config --global --list
+
+        tag_version="${{ needs.set_vars.outputs.tag_version }}"
+        git checkout -b "add-${CODE_BASE,,}-version-${tag_version}"
+        git status
+
+        VERSIONS_FILE="assets/kong_${CODE_BASE}_versions.ver"
+        if [[ ! -f $VERSIONS_FILE ]]; then
+          echo "Versions file '$VERSIONS_FILE' not found"
+          exit 1
+        fi
+        echo "${tag_version}" >> "$VERSIONS_FILE"
+        sort --version-sort -o "$VERSIONS_FILE" "$VERSIONS_FILE"
+        git diff
+        git add "$VERSIONS_FILE"
+        git commit -m "feat(version): add Kong ${CODE_BASE} version $tag_version"
+        git status
+    - name: Checkout Kong ${{ env.CODE_BASE}}
+      id: checkout_kong
+      uses: actions/checkout@v4
+      with:
+        # token: ${{ secrets.GHA_KONG_BOT_READ_TOKEN }}
+        ref: ${{ needs.set_vars.outputs.tag_version }}
+        path: ${{ needs.set_vars.outputs.repo_name }}
+    - name: Update Artifacts
+      id: update_artifacts
+      shell: bash
+      run: |
+        repo_name="${{ needs.set_vars.outputs.repo_name }}"
+        tag_version="${{ needs.set_vars.outputs.tag_version }}"
+
+        ls -lrta "$PWD"
+        cd $repo_name
+        ls "$PWD"
+        git status
+        cd ..
+
+        mkdir -p "kong-versions/${tag_version}/kong"
+        cp    "${repo_name}/Makefile" "kong-versions/${tag_version}/kong/"
+        cp -R "${repo_name}/bin"      "kong-versions/${tag_version}/kong/"
+
+        mkdir -p "kong-versions/${tag_version}/kong/spec"
+        for fname in ${repo_name}/spec/* ; do
+          case $fname in
+            (${repo_name}/spec/[0-9]*)
+              # skip test files
+              ;;
+            (*)
+              cp -R "$fname" "kong-versions/${tag_version}/kong/spec/"
+              ;;
+          esac
+        done
+        if [[ -d "${repo_name}/spec-ee" ]] ; then
+          mkdir -p "kong-versions/${tag_version}/kong/spec-ee"
+          for fname in ${repo_name}/spec-ee/* ; do
+            case $fname in
+              (${repo_name}/spec-ee/[0-9]*)
+                # skip test files
+                ;;
+              (*)
+                cp -R "$fname" "kong-versions/${tag_version}/kong/spec-ee/"
+            esac
+          done
+        fi
+
+        rm -rf "${repo_name}"
+
+        git status
+
+        git add kong-versions/
+        git commit -m "chore(version) add Kong ${CODE_BASE} version $tag_version artifacts"
+
+        git status

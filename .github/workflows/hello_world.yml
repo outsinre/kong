@@ -1,0 +1,19 @@
+# .github/workflows/hello-world.yml
+
+name: Hello World on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+
+  hello-world:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Hello World
+      run: echo "hello, world!"
