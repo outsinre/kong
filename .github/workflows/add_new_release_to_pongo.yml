@@ -146,7 +146,7 @@ jobs:
 
         git status
 
-        git add remote fork "git@github.com:outsinre/kong-pongo.git"
+        git remote add fork "git@github.com:outsinre/kong-pongo.git"
         git remote -v
         git push -u fork head
     - name: Create PR
