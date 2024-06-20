@@ -56,13 +56,13 @@ jobs:
     - set_vars
     env:
       # Required clone 'kong/kong' or 'kong/kong-ee' or push PR to 'kong/kong-pongo'
-      # GITHUB_TOKEN: ${{ secrets.PAT }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.PAT }}
     steps:
     - name: Checkout Pongo
       id: checkout_pongo
       uses: actions/checkout@v4
       with:
+        token: ${{ secrets.PAT }}
         repository: kong/kong-pongo
         ref: master
     - name: Update Versions File
@@ -94,7 +94,7 @@ jobs:
       id: checkout_kong
       uses: actions/checkout@v4
       with:
-        # token: ${{ secrets.GHA_KONG_BOT_READ_TOKEN }}
+        token: ${{ secrets.PAT }}
         ref: ${{ needs.set_vars.outputs.tag_version }}
         path: ${{ needs.set_vars.outputs.repo_name }}
     - name: Update Artifacts
@@ -147,12 +147,9 @@ jobs:
 
         git status
 
-        git remote add fork "git@github.com:outsinre/kong-pongo.git"
-        git remote -v
         git push -u fork ${{ needs.set_vars.outputs.pr_branch }}
     - name: Create PR
       id: create_pr
       shell: bash
       run: |
-        # gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
-        gh pr create -R Kong/kong-pongo -B master -H "outsinre:${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
+        gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong ${CODE_BASE} version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA'
