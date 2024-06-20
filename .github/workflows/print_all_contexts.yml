@@ -1,9 +1,10 @@
-name: Context testing
+name: Print All Contexts
 
 on: push
 
 jobs:
   dump_contexts_to_log:
+    name: Dump Contexts
     runs-on: ubuntu-latest
     steps:
       - name: Dump GitHub context
