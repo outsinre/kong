@@ -27,9 +27,9 @@ jobs:
       shell: bash
       run: |
         if [[ "${GITHUB_REPOSITORY}" = "kong/kong" ]] ; then
-          CODE_BASE=CE
+          CODE_BASE="CE"
         elif [[ "${GITHUB_REPOSITORY}" = "kong/kong-ee" ]] ; then
-          CODE_BASE=EE
+          CODE_BASE="EE"
         fi
         echo "CODE_BASE=$CODE_BASE" >> "$GITHUB_OUTPUT"
 
