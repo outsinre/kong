@@ -6,8 +6,11 @@
 name: Add New Release to Pongo
 
 on:
-  # release:
-  #   types: [published]
+  # 'releasea event will trigger a 'push' event at the same time
+  # so we only use the 'push' event, and the 'release' event is
+  # only used for test purpose.
+  release:
+    types: [prereleased]
   push:
     tags:
     # CE
@@ -130,6 +133,7 @@ jobs:
               ;;
           esac
         done
+
         if [[ -d "${repo_name}/spec-ee" ]] ; then
           mkdir -p "kong-versions/${tag_version}/kong/spec-ee"
           for fname in ${repo_name}/spec-ee/* ; do
@@ -139,6 +143,7 @@ jobs:
                 ;;
               (*)
                 cp -R "$fname" "kong-versions/${tag_version}/kong/spec-ee/"
+                ;;
             esac
           done
         fi
