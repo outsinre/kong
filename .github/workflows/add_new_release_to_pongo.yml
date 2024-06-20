@@ -141,4 +141,8 @@ jobs:
         git add kong-versions/
         git commit -m "chore(version) add Kong ${CODE_BASE} version $tag_version artifacts"
 
+        git push -u origin head
         git status
+
+        type gh
+        type hub
