@@ -26,10 +26,11 @@ jobs:
       id: define_vars
       shell: bash
       run: |
-        if [[ "${GITHUB_REPOSITORY}" = "kong/kong" ]] ; then
-          CODE_BASE="CE"
-        elif [[ "${GITHUB_REPOSITORY}" = "kong/kong-ee" ]] ; then
-          CODE_BASE="EE"
+        # change outsinre to kong
+        if [[ "${GITHUB_REPOSITORY}" = "outsinre/kong" ]] ; then
+          CODE_BASE=CE
+        elif [[ "${GITHUB_REPOSITORY}" = "outsinre/kong-ee" ]] ; then
+          CODE_BASE=EE
         fi
         echo "CODE_BASE=$CODE_BASE" >> "$GITHUB_OUTPUT"
 
