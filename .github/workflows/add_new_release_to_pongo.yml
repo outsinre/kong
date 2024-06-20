@@ -22,12 +22,12 @@ jobs:
     name: Set Vars
     runs-on: ubuntu-latest
     outputs:
-      repo_name: ${{ steps.set_repo_tag.outputs.REPO_NAME }}
-      tag_version: ${{ steps.set_repo_tag.outputs.TAG_NAME }}
-      pr_branch: ${{ steps.set_repo_tag.outputs.PR_BRANCH }}
+      repo_name: ${{ steps.define_vars.outputs.REPO_NAME }}
+      tag_version: ${{ steps.define_vars.outputs.TAG_VERSION }}
+      pr_branch: ${{ steps.define_vars.outputs.PR_BRANCH }}
     steps:
-    - name: Set Repo and Tag
-      id: set_repo_tag
+    - name: Define Vars
+      id: define_vars
       shell: bash
       run: |
         if [[ "$CODE_BASE" == "CE" ]] ; then
@@ -42,12 +42,13 @@ jobs:
         echo "github.event.release.tag_name = ${{ github.event.release.tag_name }}"
 
         if [[ "${{ github.event_name }}" == "push" ]] ; then
-          echo "TAG_NAME=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          TAG_VERSION="${{ github.ref_name }}""
         elif [[ "${{ github.event_name }}" == "release" ]] ; then
-          echo "TAG_NAME=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          TAG_VERSION="${{ github.event.release.tag_name }}"
         fi
+        echo "TAG_VERSION=$TAG_VERSION" >> "$GITHUB_OUTPUT"
 
-        echo "PR_BRANCH=add-${CODE_BASE,,}-version-${tag_version}" >> "$GITHUB_OUTPUT"
+        echo "PR_BRANCH=add-${CODE_BASE,,}-version-${TAG_VERSION}" >> "$GITHUB_OUTPUT"
   add_release_to_pongo:
     name: Add Release to Pongo
     runs-on: ubuntu-latest
@@ -148,7 +149,7 @@ jobs:
 
         git remote add fork "git@github.com:outsinre/kong-pongo.git"
         git remote -v
-        git push -u fork head
+        git push -u fork ${{ needs.set_vars.outputs.pr_branch }}
     - name: Create PR
       id: create_pr
       shell: bash
