@@ -154,10 +154,9 @@ jobs:
         git commit -m "chore(version): add Kong "${{ needs.set_vars.outputs.ce_ee }}" version $tag_version artifacts"
 
         git status
-
-        git push -u origin ${{ needs.set_vars.outputs.pr_branch }}
     - name: Create PR
       id: create_pr
       shell: bash
       run: |
+        git push -u origin ${{ needs.set_vars.outputs.pr_branch }}
         gh pr create -B master -H "${{ needs.set_vars.outputs.pr_branch }}" --title "Add Kong "${{ needs.set_vars.outputs.ce_ee }}" version ${{ needs.set_vars.outputs.tag_version }}" --body 'Created by GHA Bot.'
