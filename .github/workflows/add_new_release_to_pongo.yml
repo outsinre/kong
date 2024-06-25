@@ -6,16 +6,16 @@
 name: Add New Release to Pongo
 
 on:
-  # 'releasea event will trigger a 'push' event at the same time
-  # so we use the 'push' event in production, and the 'release'
-  # for test purpose.
+  # the 'release' event will trigger a 'push' event at the same time,
+  # so we use the 'push' event to avoid creating the PR twice.
   #release:
-  #  types: [prereleased]
+  #  types: [published]
   push:
     tags:
-    - 'test[1-9]+.[0-9]+.[0-9]+'     # test CE
-    - '[1-9]+.[0-9]+.[0-9]+'         # CE
-    - '[1-9]+.[0-9]+.[0-9]+.[0-9]+'  # EE
+    - 'test[1-9]+.[0-9]+.[0-9]+'         # test CE
+    - '[1-9]+.[0-9]+.[0-9]+'             # CE
+    - 'test[1-9]+.[0-9]+.[0-9]+.[0-9]+'  # test EE
+    - '[1-9]+.[0-9]+.[0-9]+.[0-9]+'      # EE
 
 jobs:
   set_vars:
@@ -31,9 +31,9 @@ jobs:
       shell: bash
       run: |
         # change outsinre to kong
-        if [[ "${GITHUB_REPOSITORY}" = "outsinre/kong" ]] ; then
+        if [[ "${GITHUB_REPOSITORY,,}" = "outsinre/kong" ]] ; then
           CE_EE=CE
-        elif [[ "${GITHUB_REPOSITORY}" = "outsinre/kong-ee" ]] ; then
+        elif [[ "${GITHUB_REPOSITORY,,}" = "outsinre/kong-ee" ]] ; then
           CE_EE=EE
         fi
         echo "CE_EE=$CE_EE" >> "$GITHUB_OUTPUT"
