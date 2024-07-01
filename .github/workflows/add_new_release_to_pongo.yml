@@ -68,7 +68,7 @@ jobs:
       id: checkout_pongo
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.PAT }}
+        token: ${{ env.GITHUB_TOKEN }}
         repository: kong/kong-pongo
         ref: master
     - name: Update Versions File
@@ -101,7 +101,7 @@ jobs:
       id: checkout_kong
       uses: actions/checkout@v4
       with:
-        token: ${{ secrets.PAT }}
+        token: ${{ env.GITHUB_TOKEN }}
         ref: ${{ needs.set_vars.outputs.tag_version }}
         path: ${{ github.event.repository.name }}
     - name: Update Artifacts
